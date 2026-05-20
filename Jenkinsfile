@@ -1,55 +1,72 @@
 pipeline {
     agent any
 
-    tools { nodejs 'NodeJS-20' }
-
-    triggers {
-        githubPush()
+    tools {
+        nodejs 'NodeJS-20'
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Install') {
-            steps {
-                sh 'npm ci'
+        stage('Quality') {
+            parallel {
+
+                stage('Lint') {
+                    steps {
+                        sh 'npm ci'
+                        sh 'npm run lint || echo "No lint"'
+                    }
+                }
+
+                stage('Test') {
+                    steps {
+                        sh 'npm ci && npm test'
+                    }
+                }
             }
         }
 
-        stage('Lint') {
-            steps {
-                sh 'npm run lint || echo "No lint"'
-            }
-        }
+        stage('Build') {
 
-        stage('Test') {
-            steps {
-                sh 'npm test'
+            when {
+                branch 'main'
             }
-        }
 
-        stage('Report') {
             steps {
-                echo '✅ CI passed'
+
+                withCredentials([
+                    string(
+                        credentialsId: 'app-version',
+                        variable: 'APP_VERSION'
+                    )
+                ]) {
+
+                    sh '''
+                        echo "Building $APP_VERSION"
+                        npm ci
+                    '''
+                }
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline complete'
-        }
 
         success {
-            echo 'All green!'
+            echo '✅ Build passed!'
         }
 
         failure {
-            echo 'Build failed — check logs'
+            echo '❌ Build failed!'
+        }
+
+        always {
+            cleanWs()
         }
     }
 }
