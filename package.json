@@ -12,6 +12,7 @@
   },
   "scripts": {
     "prepare": "husky",
+    "lint": "eslint .",
     "test": "echo \"Tests passed\" && exit 0"
   }
 }
