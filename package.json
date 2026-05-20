@@ -7,10 +7,14 @@
     "@commitlint/config-conventional": "^20.5.3",
     "eslint": "^10.3.0",
     "husky": "^9.1.7",
+    "jest": "^30.4.2",
+    "jest-junit": "^17.0.0",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.3"
   },
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint": "eslint .",
+    "test": "jest --coverage"
   }
 }
